@@ -3,7 +3,7 @@ namespace :db do
     namespace :reset do
       desc 'Check the consistency of schema.rb'
       task :check do
-        require 'diff/lcs'
+        require 'diffy'
 
         unless Rails.env.test?
           abort 'This task must be run under test environment'
@@ -24,7 +24,7 @@ namespace :db do
           Rake::Task['db:migrate:reset'].invoke
 
           consistent = FileUtils.compare_file(schema_rb, generated_schema)
-          diffs = Diff::LCS.diff(File.read(schema_rb), File.read(generated_schema)) unless consistent
+          diffs = Diffy::Diff.new(File.read(schema_rb), File.read(generated_schema)).to_s(:color) unless consistent
         end
 
         ENV['SCHEMA'] = original_env_schema
@@ -35,9 +35,7 @@ namespace :db do
           exit 0
         else
           puts 'ERROR: Generated schema is not consistent with db/schema.rb'
-          diffs.each do |diff|
-            puts diff
-          end
+          puts diffs unless diffs.nil?
           exit 1
         end
       end
