@@ -3,6 +3,8 @@ namespace :db do
     namespace :reset do
       desc 'Check the consistency of schema.rb'
       task :check do
+        require 'diff/lcs'
+
         unless Rails.env.test?
           abort 'This task must be run under test environment'
         end
